@@ -1,0 +1,16 @@
+{
+  "name": "定力台 · 专注自律",
+  "short_name": "定力台",
+  "description": "每日任务、番茄钟、App 限时、时间兑换与专注森林 —— 把自律变成看得见的进度。",
+  "lang": "zh-CN",
+  "start_url": ".",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0c0d10",
+  "theme_color": "#0c0d10",
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ]
+}
