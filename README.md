@@ -27,10 +27,10 @@ npx serve .
 
 ## 部署到手机（华为）
 
-1. **公网直链（最简单）**：用**华为浏览器**或 **Chrome** 打开下方地址，菜单 → 「添加到主屏幕」，即变为独立 App（全屏、无地址栏）：
-   https://751e4a7581374dafa7d9cd8a62f3d71f.gz5.agentos-app.net
-2. **文件直传（最隐私 / 真离线）**：把整个文件夹拷到手机，用浏览器打开 `index.html`。
-3. 首次联网打开一次即可离线（Service Worker 已缓存应用外壳）。
+1. **官方永久地址（推荐）**：https://ffuji4788-star.github.io/dingli-tai/ —— GitHub Pages 托管，**永不失效**。用**华为浏览器**或 **Chrome** 打开，菜单 → 「添加到主屏幕」，即变为独立 App（全屏、无地址栏）。
+2. **公网直链（备选）**：https://751e4a7581374dafa7d9cd8a62f3d71f.gz5.agentos-app.net
+3. **文件直传（最隐私 / 真离线）**：把整个文件夹拷到手机，用浏览器打开 `index.html`。
+4. 首次联网打开一次即可离线（Service Worker 已缓存应用外壳）。
 
 > 公网链接仅托管代码；你的任务与额度只存在手机本地，不落服务器。
 
@@ -52,4 +52,4 @@ dingli-tai/
 
 ## 仓库
 
-源码托管于私有仓库：`https://github.com/ffuji4788-star/dingli-tai`
+源码托管于公开仓库：`https://github.com/ffuji4788-star/dingli-tai`

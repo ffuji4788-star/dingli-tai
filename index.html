@@ -282,6 +282,8 @@ body{overflow:hidden;background:var(--backdrop);display:flex;align-items:center;
 .rem-item{display:flex;align-items:center;gap:10px;padding:12px 0;border-bottom:1px solid var(--line);}
 .rem-item .tm{font-size:15px;font-weight:700;font-variant-numeric:tabular-nums;}
 .rem-item .tx{flex:1;font-size:14px;color:var(--dim);}
+.rem-item .rem-del{width:30px;height:30px;border-radius:50%;border:none;background:transparent;color:var(--dim2);font-size:18px;flex:none;}
+.rem-item .rem-del:active{transform:scale(.9);}
 
 /* lock overlay */
 .lock-ov{position:absolute;inset:0;z-index:70;background:radial-gradient(120% 80% at 50% 20%,#131419,#0a0b0e);
@@ -868,7 +870,6 @@ function stopPomo(){
 }
 $("#pomo-start").addEventListener("click", () => { prunning ? stopPomo() : startPomo(); });
 $("#pomo-reset").addEventListener("click", () => { stopPomo(); pleft = POMO[pmode]*60; pomoDraw(); });
-setMode("focus");
 
 /* 切换即失败 (P0.5.2)：专注进行中切走 → 记录打断 */
 document.addEventListener("visibilitychange", () => {
@@ -928,7 +929,9 @@ function renderQuota(){
 }
 function appRow(a, min, isGood){
   const el = document.createElement("div"); el.className = "app-row" + (isGood?" good":"");
-  el.innerHTML = `<div class="ic">${esc(a.name[0])}</div><div class="nm">${esc(a.name)}</div><div class="mn">${isGood?"可兑换":"已用 "+min+" 分"}</div>`;
+  el.innerHTML = `<div class="ic">${esc(a.name[0])}</div><div class="nm">${esc(a.name)}</div><div class="mn">${isGood?"可兑换 · 点按兑换":"已用 "+min+" 分 · 点按记一笔"}</div>`;
+  el.style.cursor = "pointer";
+  el.addEventListener("click", () => { isGood ? openLogSheet(true) : openLogSheet(false, a.name); });
   return el;
 }
 $("#log-add").addEventListener("click", () => openLogSheet(false));
@@ -942,7 +945,7 @@ function openSheet(title, body){
 }
 function closeSheet(){ scrim.classList.remove("on"); sheet.classList.remove("on"); }
 scrim.addEventListener("click", closeSheet);
-function openLogSheet(exchange){
+function openLogSheet(exchange, presetApp){
   if(exchange){
     openSheet("用正事换额度", `
       <label>做了什么正事（读书 / 运动 / 学习…）</label><input id="ex-tx" type="text" placeholder="如 读英语" maxlength="20">
@@ -956,7 +959,7 @@ function openLogSheet(exchange){
     });
     return;
   }
-  const funApps = S.apps.filter(a=>a.cat==="fun").map(a=>`<option value="${a.name}">${a.name}</option>`).join("");
+  const funApps = S.apps.filter(a=>a.cat==="fun").map(a=>`<option value="${esc(a.name)}" ${presetApp===a.name?"selected":""}>${esc(a.name)}</option>`).join("");
   openSheet("记一笔使用", `
     <label>App</label><select id="lg-app">${funApps}</select>
     <label>用了多久（分钟）</label><input id="lg-min" type="number" min="1" max="300" value="10">
@@ -1119,7 +1122,7 @@ function openSettings(){
   $("#set-strict").classList.toggle("on", S.strict);
   $("#set-grace").classList.toggle("on", !!S.grace);
   $("#set-rem").innerHTML = "";
-  S.reminders.forEach(r => { const el=document.createElement("div"); el.className="rem-item"; el.innerHTML=`<span class="tm">${r.tm}</span><span class="tx">${r.tx}</span>`; $("#set-rem").appendChild(el); });
+  S.reminders.forEach((r,idx) => { const el=document.createElement("div"); el.className="rem-item"; el.innerHTML=`<span class="tm">${esc(r.tm)}</span><span class="tx">${esc(r.tx)}</span><button class="rem-del" title="删除">×</button>`; el.querySelector(".rem-del").addEventListener("click", () => { S.reminders.splice(idx,1); save(); openSettings(); }); $("#set-rem").appendChild(el); });
   $("#settings").classList.add("on");
 }
 $("#set-strict").addEventListener("click", () => { S.strict = !S.strict; $("#set-strict").classList.toggle("on", S.strict); save(); });
@@ -1157,6 +1160,7 @@ document.querySelectorAll("#theme-sw button").forEach(b=>b.addEventListener("cli
 
 /* ---------- init ---------- */
 applyTheme();
+setMode("focus");
 renderAffirm(); renderPlan(); renderTasks(); renderQuota(); renderReview(); renderHook(); checkBedtime();
 
 /* PWA：仅在 http/https 下注册 service worker，使 App 可离线、可“添加到主屏幕” */
