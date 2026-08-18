@@ -7,7 +7,7 @@
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="icon-192.png">
 <title>定力台 · 自律工作台</title>
-<script>try{var t=JSON.parse(localStorage.getItem('dingli_state_v2')||'{}').theme;if(t)document.documentElement.dataset.theme=t;}catch(e){}</script>
+<script>try{var st=JSON.parse(localStorage.getItem('dingli_state_v2')||'{}');var t=st&&st.theme;if(!t&&window.matchMedia&&matchMedia('(prefers-color-scheme: light)').matches)t='light';if(!t)t='dark';document.documentElement.dataset.theme=t;}catch(e){document.documentElement.dataset.theme='dark';}</script>
 <style>
 /* finesse · register=h5 · morph=A.1-app-shell · A=ink+amber · B=800/400
  * C=ring-hero+capsule-bars+floating-pill-tabbar · D=SVG-ring-suite · E=focus-tracker
@@ -365,6 +365,7 @@ body{overflow:hidden;background:var(--backdrop);display:flex;align-items:center;
 <style>.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}</style>
 </head>
 <body>
+<noscript><div style="position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:#0c0d10;color:#ECEDEF;font-family:-apple-system,BlinkMacSystemFont,'PingFang SC','Microsoft YaHei',sans-serif;padding:24px;text-align:center;line-height:1.7;z-index:9999">定力台为交互式自律工作台，需要启用 JavaScript 才能运行。请在浏览器设置中开启 JavaScript 后重新加载本页。</div></noscript>
 <h1 class="sr-only">定力台 · 自律工作台</h1>
 <div class="phone" id="phone">
   <div class="status">
@@ -854,7 +855,7 @@ function startPomo(){
   if(prunning) return; prunning = true; $("#pomo-start").textContent = "暂停";
   ptimer = setInterval(() => {
     pleft--; pomoDraw();
-    if(lockOn && !lockTaskMode && !lockPomo && pleft <= 0) unlock(true);
+    if(lockOn && lockPomo && pleft <= 0) unlock(true);
     if(pleft <= 0){
       clearInterval(ptimer); prunning = false; $("#pomo-start").textContent = "开始";
       if(pmode === "focus") completeFocus();
@@ -1131,6 +1132,36 @@ function openSettings(){
 }
 $("#set-strict").addEventListener("click", () => { S.strict = !S.strict; $("#set-strict").classList.toggle("on", S.strict); save(); });
 $("#set-grace").addEventListener("click", () => { S.grace = S.grace ? 0 : 1; $("#set-grace").classList.toggle("on", !!S.grace); save(); });
+/* ---------- 数据备份（导出/导入 JSON，防丢） ---------- */
+function dlExport(){
+  const payload = { _app:"dingli-tai", _v:2, _exportedAt:new Date().toISOString(), state:S, theme:document.documentElement.dataset.theme||"light" };
+  const blob = new Blob([JSON.stringify(payload,null,2)], {type:"application/json"});
+  const a = document.createElement("a"); a.href = URL.createObjectURL(blob);
+  a.download = "dingli-tai-backup-"+new Date().toISOString().slice(0,10)+".json"; a.click();
+  URL.revokeObjectURL(a.href);
+}
+function dlImport(file){
+  const rd = new FileReader();
+  rd.onload = () => { try {
+    const data = JSON.parse(rd.result);
+    if(data.state){ S = Object.assign({}, DEFAULT, data.state); save(); }
+    if(data.theme){ document.documentElement.dataset.theme = data.theme; try{localStorage.setItem('dingli_theme', data.theme);}catch(e){} }
+    alert("备份已恢复，即将刷新。"); location.reload();
+  } catch(err){ alert("导入失败：文件格式错误"); } };
+  rd.readAsText(file);
+}
+(function(){
+  const panel = document.getElementById("settings");
+  if(panel && !document.getElementById("dl-backup")){
+    const row = document.createElement("div");
+    row.id = "dl-backup"; row.className = "set-row";
+    row.innerHTML = '<div class="set-label">数据备份</div><div class="set-actions"><button id="dl-export" class="btn">导出 JSON</button><button id="dl-import" class="btn ghost">导入恢复</button><input type="file" id="dl-import-file" accept="application/json" style="display:none"></div>';
+    panel.appendChild(row);
+    document.getElementById("dl-export").onclick = dlExport;
+    document.getElementById("dl-import").onclick = () => document.getElementById("dl-import-file").click();
+    document.getElementById("dl-import-file").onchange = (e) => { if(e.target.files[0]) dlImport(e.target.files[0]); e.target.value=""; };
+  }
+})();
 $("#set-goal").addEventListener("click", () => {
   openSheet("每日专注目标", `<label>分钟（如 90 / 120 / 180）</label><input id="g-in" type="number" min="10" max="600" value="${S.goal}">
     <button class="done" id="g-save">保存</button>`);
@@ -1172,5 +1203,6 @@ if('serviceWorker' in navigator && location.protocol.indexOf('http')===0){
   window.addEventListener('load', function(){ navigator.serviceWorker.register('sw.js').catch(function(){}); });
 }
 </script>
+<footer style="margin-top:48px;padding:18px 0;border-top:1px solid var(--line, rgba(128,128,128,.25));color:var(--muted, rgba(128,128,128,.75));font-size:13px;text-align:center;line-height:1.6">林先生工作室 · 本地工具 &nbsp;·&nbsp; <a href="#" onclick="window.scrollTo({top:0,behavior:'smooth'});return false;" style="color:inherit;text-decoration:underline">回到顶部</a></footer>
 </body>
 </html>
